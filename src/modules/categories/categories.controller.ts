@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Inject, Param, Post, Query } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common'
 import { CategoriesService } from './categories.service'
 import { CategoryType } from '../../models'
 
