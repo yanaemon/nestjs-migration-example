@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { InferSchemaType, Schema, model } from "mongoose";
 
 const user = new Schema({
   email: { type: String, required: true, unique: true },
@@ -10,3 +10,4 @@ const user = new Schema({
 
 export const User = model('User', user)
 
+export type UserType = InferSchemaType<typeof user>

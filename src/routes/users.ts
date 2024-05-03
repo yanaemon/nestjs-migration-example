@@ -1,8 +1,8 @@
 import express from 'express'
-import { User } from "../models/users"
+import { User } from "../models"
 
 export async function list(req: express.Request, res: express.Response) {
-    const users = await User.find()
+    const users = await User.find(req.query)
     return res.json(users)
 }
 
