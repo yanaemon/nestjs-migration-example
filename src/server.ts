@@ -1,5 +1,8 @@
 import express from 'express'
 import mongoose from 'mongoose'
+import { NestFactory } from '@nestjs/core'
+import { ExpressAdapter, NestExpressApplication } from '@nestjs/platform-express'
+import { AppModule } from './app.module'
 import { users } from './routes'
 
 const app: express.Express = express()
@@ -38,6 +41,9 @@ function wrap(
   }
 }
 
+/**
+ * Not migrated to Nest.js yet
+ */
 app.use(
   '/api/users',
   express
@@ -47,11 +53,39 @@ app.use(
     .post('/', wrap(users.create))
 )
 
-app.listen(port, () => {
+const server = app.listen(port, async () => {
   console.log(`Server is starting on http://localhost:${port}`)
-  mongoose.connect(mongodbUri).then(() => {
+  await mongoose.connect(mongodbUri).then(() => {
     console.log(`Connected to MongoDB ${mongodbUri}`)
   })
+
+  const nestApp = await NestFactory.create<NestExpressApplication>(
+    AppModule,
+    new ExpressAdapter(app),
+    { abortOnError: false },
+  )
 })
+
+const shutdown = (signal: NodeJS.Signals) => {
+  console.log(`Received ${signal}, stopping server...`)
+  server.close(async err => {
+    if (err) {
+      console.error('Failed to close server', err)
+      process.exit(1)
+    }
+    try {
+      await mongoose.disconnect()
+      console.log('Server stopped')
+      process.exit(0)
+    } catch (err) {
+      console.error('Failed to disconnect from MongoDB', err)
+      process.exit(1)
+    }
+  })
+}
+
+// graceful shutdown
+process.on('SIGINT', shutdown)
+process.on('SIGTERM', shutdown)
 
 export default app
