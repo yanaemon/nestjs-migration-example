@@ -1,5 +1,3 @@
-
-
 export const httpStatusMap = {
   400: 'BadRequestException',
   401: 'UnauthorizedException',

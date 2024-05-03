@@ -58,7 +58,7 @@ program
   .option('--moduleKey <moduleKey>', 'key of module (ex. exampleResources)')
   .option(
     '--routePath <routePath>',
-    'route file path (ex. exampleResources.ts)'
+    'route file path (ex. exampleResources.ts)',
   )
   .option('--functions <functions>', 'functions to migrate (ex. func1,func2)')
   .option('--admin')
@@ -132,7 +132,7 @@ function todo(msg: string) {
 
 const uniqImports = (arr: ImportDeclarationStructure[]) => {
   return arr.reduce((acc, cur) => {
-    const found = acc.find(a => a.moduleSpecifier === cur.moduleSpecifier)
+    const found = acc.find((a) => a.moduleSpecifier === cur.moduleSpecifier)
     if (found) {
       if (cur.namedImports) {
         if (
@@ -142,7 +142,7 @@ const uniqImports = (arr: ImportDeclarationStructure[]) => {
           cur.namedImports.length
         ) {
           found.namedImports = Array.from(
-            new Set([...found.namedImports, ...cur.namedImports])
+            new Set([...found.namedImports, ...cur.namedImports]),
           )
           return acc
         }
@@ -156,16 +156,22 @@ const uniqImports = (arr: ImportDeclarationStructure[]) => {
   }, [] as ImportDeclarationStructure[])
 }
 
-export function updateImportDeclarations(outputFile: SourceFile, importToAdds: ImportDeclarationStructure[]) {
+export function updateImportDeclarations(
+  outputFile: SourceFile,
+  importToAdds: ImportDeclarationStructure[],
+) {
   const existingImports = outputFile.getImportDeclarations()
-  existingImports.forEach(importDecl => {
+  existingImports.forEach((importDecl) => {
     console.log(
       importDecl.getModuleSpecifier().getText(),
-      importDecl.getModuleSpecifier().getLiteralText()
+      importDecl.getModuleSpecifier().getLiteralText(),
     )
   })
   for (const importToAdd of uniqImports(importToAdds)) {
-    const checkImportType = (a: ImportDeclaration, b: ImportDeclarationStructure) => {
+    const checkImportType = (
+      a: ImportDeclaration,
+      b: ImportDeclarationStructure,
+    ) => {
       return (
         // NOTE. InvalidOperationError: An import declaration cannot have both a namespace import and a named import.
         !(a.getNamespaceImport() && a.getNamedImports()) &&
@@ -176,19 +182,19 @@ export function updateImportDeclarations(outputFile: SourceFile, importToAdds: I
     }
     const existingImport =
       existingImports.find(
-        importDecl =>
+        (importDecl) =>
           importDecl.getModuleSpecifier().getLiteralText() ===
             importToAdd.moduleSpecifier &&
-          checkImportType(importDecl, importToAdd)
+          checkImportType(importDecl, importToAdd),
       ) ||
       (importToAdd.moduleSpecifier.includes('src/modules')
         ? existingImports.find(
-            importDecl =>
+            (importDecl) =>
               importDecl.getModuleSpecifier().getLiteralText() ===
                 importToAdd.moduleSpecifier.replace(
                   /src\/api\/modules\/[^\/]*/,
-                  '.'
-                ) && checkImportType(importDecl, importToAdd)
+                  '.',
+                ) && checkImportType(importDecl, importToAdd),
           )
         : null)
 
@@ -202,7 +208,7 @@ export function updateImportDeclarations(outputFile: SourceFile, importToAdds: I
         debugLog(
           'Namespace Import',
           existingImport.getNamespaceImport()?.getText(),
-          importToAdd
+          importToAdd,
         )
         if (
           existingImport.getNamespaceImport()?.getText() !==
@@ -217,7 +223,7 @@ export function updateImportDeclarations(outputFile: SourceFile, importToAdds: I
         debugLog(
           'Default Import',
           existingImport.getDefaultImport()?.getText(),
-          importToAdd
+          importToAdd,
         )
         if (
           existingImport.getDefaultImport()?.getText() !==
@@ -233,8 +239,8 @@ export function updateImportDeclarations(outputFile: SourceFile, importToAdds: I
           continue
         }
         const namedImports = existingImport.getNamedImports()
-        const namedImportNames = namedImports.map(namedImport =>
-          namedImport.getName()
+        const namedImportNames = namedImports.map((namedImport) =>
+          namedImport.getName(),
         )
         debugLog('existingImport', importToAdd, namedImportNames)
         if (
@@ -284,7 +290,7 @@ export function copyAndPasteToService(params: ModuleConfig) {
     },
   ] as ImportDeclarationStructure[]
   // Copy original imports from source file to output file
-  sourceFile.getImportDeclarations().forEach(importDeclaration => {
+  sourceFile.getImportDeclarations().forEach((importDeclaration) => {
     const importClause = importDeclaration.getStructure()
     importToAdds.push(importClause)
   })
@@ -309,7 +315,7 @@ export function copyAndPasteToService(params: ModuleConfig) {
   }
 
   // Iterate over each function in the source file
-  sourceFile.forEachChild(node => {
+  sourceFile.forEachChild((node) => {
     let functionName: string | undefined
     let functionDeclaration: FunctionDeclaration | ArrowFunction | undefined
 
@@ -320,7 +326,7 @@ export function copyAndPasteToService(params: ModuleConfig) {
       const constFunctionDeclaration = node.asKind(SyntaxKind.VariableStatement)
       if (constFunctionDeclaration) {
         console.log('constFunctionDeclaration', constFunctionDeclaration)
-        constFunctionDeclaration.getDeclarations().forEach(declaration => {
+        constFunctionDeclaration.getDeclarations().forEach((declaration) => {
           const initializer = declaration.getInitializer()
           if (
             initializer &&
@@ -344,16 +350,18 @@ export function copyAndPasteToService(params: ModuleConfig) {
       // Extract JSDoc comments
       const jsDocs = functionDeclaration
         .getJsDocs()
-        .map(doc => doc.getStructure())
+        .map((doc) => doc.getStructure())
       // Extract parameters, preserving their original types or using 'any' as fallback
-      const parameters = functionDeclaration.getParameters().map(parameter => {
-        const parameterType = parameter.getTypeNode()?.getText() || 'any' // Preserve original type text
-        return {
-          name: parameter.getName(),
-          // Directly set the type without import when possible
-          type: parameterType.includes('import') ? 'any' : parameterType,
-        }
-      })
+      const parameters = functionDeclaration
+        .getParameters()
+        .map((parameter) => {
+          const parameterType = parameter.getTypeNode()?.getText() || 'any' // Preserve original type text
+          return {
+            name: parameter.getName(),
+            // Directly set the type without import when possible
+            type: parameterType.includes('import') ? 'any' : parameterType,
+          }
+        })
       // Extract function body
       const bodyText = functionDeclaration.getBodyText() || ''
 
@@ -364,7 +372,7 @@ export function copyAndPasteToService(params: ModuleConfig) {
       // Construct the method for the class structure
       classDeclaration?.addMethod({
         name: functionName,
-        parameters: parameters.map(param => ({
+        parameters: parameters.map((param) => ({
           name: param.name,
           // Directly use the type text, avoiding modifications
           type: param.type,
@@ -403,7 +411,7 @@ export function generateController(params: ModuleConfig) {
 
   const entryPoints = parseExpressServer()
   const getEntryPoint = (func: string) => {
-    return entryPoints.find(ep => ep.func === `${params.key}.${func}`)
+    return entryPoints.find((ep) => ep.func === `${params.key}.${func}`)
   }
   const rootPath = params.admin ? `admin/${params.key}` : params.key
 
@@ -445,7 +453,7 @@ export function generateController(params: ModuleConfig) {
   // generate function and check HTTP Method
   const httpMethods = new Set<HttpMethod>()
 
-  sourceFile.forEachChild(node => {
+  sourceFile.forEachChild((node) => {
     let functionName: string | undefined
     let functionDeclaration: FunctionDeclaration | ArrowFunction | undefined
 
@@ -456,7 +464,7 @@ export function generateController(params: ModuleConfig) {
       const constFunctionDeclaration = node.asKind(SyntaxKind.VariableStatement)
       if (constFunctionDeclaration) {
         console.log('constFunctionDeclaration', constFunctionDeclaration)
-        constFunctionDeclaration.getDeclarations().forEach(declaration => {
+        constFunctionDeclaration.getDeclarations().forEach((declaration) => {
           const initializer = declaration.getInitializer()
           if (
             initializer &&
@@ -574,9 +582,9 @@ export function addTodoComment(params: ModuleConfig) {
 
   const changes: { pos: number; text: string }[] = []
 
-  sourceFile.getClasses().forEach(classDeclaration => {
-    classDeclaration.getMethods().forEach(method => {
-      method.forEachDescendant(node => {
+  sourceFile.getClasses().forEach((classDeclaration) => {
+    classDeclaration.getMethods().forEach((method) => {
+      method.forEachDescendant((node) => {
         if (
           node.getKind() === SyntaxKind.Identifier &&
           ['req', 'res'].includes(node.getText())
@@ -587,7 +595,7 @@ export function addTodoComment(params: ModuleConfig) {
             node.getParent()?.getKind() !== SyntaxKind.Parameter
           ) {
             const start = node.getStartLinePos()
-            if (!changes.some(change => change.pos === start)) {
+            if (!changes.some((change) => change.pos === start)) {
               changes.push({
                 pos: start,
                 text: `// ${todo('Check req/res')}\n`,
@@ -611,7 +619,7 @@ export function addTodoComment(params: ModuleConfig) {
   })
 
   // Optionally, save the changes to the source file
-  sourceFile.save().catch(err => console.error(err))
+  sourceFile.save().catch((err) => console.error(err))
 }
 
 type Route = {
@@ -630,7 +638,7 @@ type EntryPoint = {
 function parseExpressRoute(node: Node) {
   const routes: EntryPoint[] = []
   let route = {} as EntryPoint
-  node.forEachDescendant(descendant => {
+  node.forEachDescendant((descendant) => {
     debugLog(descendant.getKindName(), descendant.getText())
     if (descendant.getKind() === SyntaxKind.Identifier) {
       if (['get', 'post', 'put', 'delete'].includes(descendant.getText())) {
@@ -663,11 +671,14 @@ function parseAppUse(node: Node) {
   debugLog(expression?.getText())
   const args = callExpr?.getArguments() || []
 
-  debugLog(args[args.length - 1]?.getKindName(), args[args.length - 1]?.getText())
+  debugLog(
+    args[args.length - 1]?.getKindName(),
+    args[args.length - 1]?.getText(),
+  )
   return {
     type: 'group' as const,
     path: args[0].getText().replace(/['"`]+/g, ''),
-    middlewares: args.slice(1, args.length - 1).map(arg => arg.getText()),
+    middlewares: args.slice(1, args.length - 1).map((arg) => arg.getText()),
     routes: parseExpressRoute(args[args.length - 1]),
   }
 }
@@ -677,13 +688,13 @@ function parseExpressServer() {
 
   const results: (EntryPoint | Route)[] = []
 
-  sourceFile?.forEachDescendant(descendant => {
+  sourceFile?.forEachDescendant((descendant) => {
     if (descendant.getKind() === SyntaxKind.CallExpression) {
       const callExpr = descendant.asKind(SyntaxKind.CallExpression)
       const expression = callExpr?.getExpression()
       if (expression?.getKind() === SyntaxKind.PropertyAccessExpression) {
         const propertyAccessExpr = expression.asKind(
-          SyntaxKind.PropertyAccessExpression
+          SyntaxKind.PropertyAccessExpression,
         )
         if (propertyAccessExpr?.getExpression().getText() === 'app') {
           if (propertyAccessExpr.getName() === 'use') {
@@ -707,36 +718,39 @@ function parseExpressServer() {
   })
 
   console.log('===========================')
-  const flattenRoutes = results.reduce((acc, cur) => {
-    if (cur.type === 'group') {
-      for (const route of cur.routes) {
+  const flattenRoutes = results.reduce(
+    (acc, cur) => {
+      if (cur.type === 'group') {
+        for (const route of cur.routes) {
+          acc.push({
+            method: route.method,
+            path: cur.path + route.path,
+            func: route.func?.split('\n')[0],
+            middlewares: cur.middlewares,
+          })
+        }
+      } else {
         acc.push({
-          method: route.method,
-          path: cur.path + route.path,
-          func: route.func?.split('\n')[0],
-          middlewares: cur.middlewares,
+          method: cur.method,
+          path: cur.path,
+          func: cur.func?.split('\n')[0],
         })
       }
-    } else {
-      acc.push({
-        method: cur.method,
-        path: cur.path,
-        func: cur.func?.split('\n')[0],
-      })
-    }
-    return acc
-  }, [] as {
-    method: string
-    path: string
-    func: string
-    middlewares?: string[]
-  }[])
+      return acc
+    },
+    [] as {
+      method: string
+      path: string
+      func: string
+      middlewares?: string[]
+    }[],
+  )
   for (const route of flattenRoutes) {
     console.log(
       route.method,
       route.path,
       route.func,
-      route.middlewares?.join(',')
+      route.middlewares?.join(','),
     )
   }
   return flattenRoutes
@@ -777,7 +791,7 @@ export function replaceResError(params: ModuleConfig) {
 
   const namedImports = new Set<string>()
   // Find all call expressions in the file
-  sourceFile.forEachDescendant(node => {
+  sourceFile.forEachDescendant((node) => {
     if (node.getKind() === SyntaxKind.CallExpression) {
       console.log(node.getText())
       const callExpression = (node as any).getExpression()
@@ -787,7 +801,6 @@ export function replaceResError(params: ModuleConfig) {
       const resError = getResStructure(node)
       console.log('### resError', resError)
       if (resError.status && resError.status !== '200' && resError.json) {
-        
         // Replace with `throw new BadRequestException(...)`
         // const targetNode = node.getParent().getText().startsWith('return')
         //   ? node.getParent()
@@ -797,7 +810,7 @@ export function replaceResError(params: ModuleConfig) {
           ?.replaceWithText(
             httpStatusMap[resError.status]
               ? `throw new ${httpStatusMap[resError.status]}(${resError.json})`
-              : `throw new HttpException(${resError.json}, ${resError.status})`
+              : `throw new HttpException(${resError.json}, ${resError.status})`,
           )
         namedImports.add(httpStatusMap[resError.status] || 'HttpException')
       }
@@ -825,7 +838,7 @@ export function replaceRes(params: ModuleConfig) {
   const sourceFile = project.addSourceFileAtPath(params.service.filePath)
 
   // Find all call expressions in the file
-  sourceFile.forEachDescendant(node => {
+  sourceFile.forEachDescendant((node) => {
     if (node.getKind() === SyntaxKind.CallExpression) {
       console.log(node.getText())
       const callExpression = (node as any).getExpression()
@@ -854,19 +867,19 @@ export function replaceReq(params: ModuleConfig) {
   project.addSourceFilesFromTsConfig(params.tsConfigPath)
   const sourceFile = project.addSourceFileAtPath(params.service.filePath)
   const controllerSourceFile = project.addSourceFileAtPath(
-    params.controller.filePath
+    params.controller.filePath,
   )
 
   const importsToAdd: ImportDeclarationStructure[] = []
   const controllerImportsToAdd: ImportDeclarationStructure[] = []
 
-  sourceFile.getClasses().forEach(classDeclaration => {
+  sourceFile.getClasses().forEach((classDeclaration) => {
     const controllerClass = controllerSourceFile.getClasses()
     // GET ([query, [options]])
     // POST, PUT (...params, [body], [{ ...options, ...query }])
 
-    classDeclaration.getMethods().forEach(method => {
-      const paramNames = method.getParameters().map(p => p.getName())
+    classDeclaration.getMethods().forEach((method) => {
+      const paramNames = method.getParameters().map((p) => p.getName())
 
       console.log('========== method ==========')
       console.log(method.getName(), paramNames)
@@ -882,7 +895,7 @@ export function replaceReq(params: ModuleConfig) {
         params: new Set<string | null>(),
       }
 
-      method.forEachDescendant(node => {
+      method.forEachDescendant((node) => {
         if (node.getText().startsWith('req.')) {
           console.log('---------- req ---------')
           const vars = node.getText().split('.')
@@ -891,12 +904,12 @@ export function replaceReq(params: ModuleConfig) {
           if (reqVars[vars[1] as keyof typeof reqVars]) {
             reqVars[vars[1] as keyof typeof reqVars].add(
               vars[2]?.replace(/[\?\${`]/g, '').replace(/[ }\[\(\n].*/g, '') ||
-                null
+                null,
             )
           } else {
             console.error('unexpected var', vars)
           }
-          const getVarStr = (vars: string[]) => vars.filter(v => v).join('.')
+          const getVarStr = (vars: string[]) => vars.filter((v) => v).join('.')
           const v = getVarStr(vars.slice(1))
           const restV = getVarStr(vars.slice(2))
           switch (vars[1]) {
@@ -929,16 +942,16 @@ export function replaceReq(params: ModuleConfig) {
       })
       console.log(reqVars)
 
-      const controllerMethod = controllerClass.map(classDeclaration =>
+      const controllerMethod = controllerClass.map((classDeclaration) =>
         classDeclaration
           .getMethods()
-          .find(m => m.getName() === method.getName())
+          .find((m) => m.getName() === method.getName()),
       )[0]
       let methodCallExpression: CallExpression | undefined
       const methodCallStr = `this.${
         params.service.varName
       }.${method.getName()}(req, res)`
-      controllerMethod?.forEachDescendant(node => {
+      controllerMethod?.forEachDescendant((node) => {
         if (node.getKind() === SyntaxKind.CallExpression) {
           if (node.getText() === methodCallStr) {
             methodCallExpression = node.asKind(SyntaxKind.CallExpression)
@@ -950,19 +963,19 @@ export function replaceReq(params: ModuleConfig) {
       console.log(
         controllerClass[0].getName(),
         controllerMethod?.getName(),
-        methodCallExpression?.getText()
+        methodCallExpression?.getText(),
       )
 
       // argument
-      controllerMethod?.getParameters().forEach(p => p.remove())
+      controllerMethod?.getParameters().forEach((p) => p.remove())
       methodCallExpression
         ?.getArguments()
-        .forEach(a => methodCallExpression?.removeArgument(a))
-      method.getParameters().forEach(p => p.remove())
+        .forEach((a) => methodCallExpression?.removeArgument(a))
+      method.getParameters().forEach((p) => p.remove())
 
       // params
       if (reqVars.params.size) {
-        Array.from(reqVars.params).forEach(name => {
+        Array.from(reqVars.params).forEach((name) => {
           if (name) {
             controllerMethod?.addParameter({
               name,
@@ -1005,7 +1018,7 @@ export function replaceReq(params: ModuleConfig) {
           }
         }
         const bodyType = bodyTypes.length
-          ? `{ ${bodyTypes.map(key => `${key}?: any`).join('; ')} }`
+          ? `{ ${bodyTypes.map((key) => `${key}?: any`).join('; ')} }`
           : '{ [key: string]: any }'
         controllerMethod?.addParameter({
           name: 'body',
@@ -1054,25 +1067,25 @@ export function replaceReq(params: ModuleConfig) {
         }
       }
       const options = queryOptions.sort((a, b) =>
-        b.isSpread ? -1 : a.isSpread ? 1 : 0
+        b.isSpread ? -1 : a.isSpread ? 1 : 0,
       )
       console.log(options)
       const makeArg = (v: string[], delim = ', ') => `{ ${v.join(delim)} }`
       if (options.length) {
         methodCallExpression?.addArgument(
           makeArg(
-            options.map(o =>
-              o.isSpread ? `...${o.varName}` : `${o.name}: ${o.varName}`
-            )
-          )
+            options.map((o) =>
+              o.isSpread ? `...${o.varName}` : `${o.name}: ${o.varName}`,
+            ),
+          ),
         )
         method.addParameter({
           name: makeArg(
-            options.map(o => (o.isSpread ? `...${o.name}` : o.name))
+            options.map((o) => (o.isSpread ? `...${o.name}` : o.name)),
           ),
           type: makeArg(
-            options.map(o => (o.isSpread ? o.type : `${o.name}?: ${o.type}`)),
-            '; '
+            options.map((o) => (o.isSpread ? o.type : `${o.name}?: ${o.type}`)),
+            '; ',
           ),
         })
       }
@@ -1083,8 +1096,8 @@ export function replaceReq(params: ModuleConfig) {
   updateImportDeclarations(controllerSourceFile, controllerImportsToAdd)
 
   // Optionally, save the changes to the source file
-  sourceFile.save().catch(err => console.error(err))
-  controllerSourceFile.save().catch(err => console.error(err))
+  sourceFile.save().catch((err) => console.error(err))
+  controllerSourceFile.save().catch((err) => console.error(err))
 }
 
 const modes = {

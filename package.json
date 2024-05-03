@@ -6,19 +6,8 @@
   "author": "yanaemon <hiroki.shirayanagi@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "dev": "nodemon ts-node src/server.ts"
-  },
-  "devDependencies": {
-    "@nestjs/cli": "^10.3.2",
-    "@nestjs/schematics": "^10.1.1",
-    "@types/express": "^4.17.21",
-    "@types/node": "^20.12.8",
-    "commander": "^12.0.0",
-    "nodemon": "^3.1.0",
-    "ts-morph": "^22.0.0",
-    "ts-node": "^10.9.2",
-    "tsc": "^2.0.4",
-    "typescript": "^5.4.5"
+    "dev": "nodemon ts-node src/server.ts",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix"
   },
   "dependencies": {
     "@nestjs/common": "^10.3.8",
@@ -30,5 +19,25 @@
     "mongoose": "^8.3.3",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^10.3.2",
+    "@nestjs/schematics": "^10.1.1",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.12.8",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "commander": "^12.0.0",
+    "eslint": "^8.42.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "globals": "^15.1.0",
+    "nodemon": "^3.1.0",
+    "prettier": "^3.0.0",
+    "ts-morph": "^22.0.0",
+    "ts-node": "^10.9.2",
+    "tsc": "^2.0.4",
+    "typescript": "^5.4.5",
+    "typescript-eslint": "^7.8.0"
   }
 }

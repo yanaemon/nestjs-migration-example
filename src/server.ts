@@ -1,7 +1,10 @@
 import express from 'express'
 import mongoose from 'mongoose'
 import { NestFactory } from '@nestjs/core'
-import { ExpressAdapter, NestExpressApplication } from '@nestjs/platform-express'
+import {
+  ExpressAdapter,
+  NestExpressApplication,
+} from '@nestjs/platform-express'
 import { AppModule } from './app.module'
 import { users } from './routes'
 
@@ -16,13 +19,13 @@ function wrap(
   handler: (
     req: express.Request,
     res: express.Response,
-    next: express.NextFunction
+    next: express.NextFunction,
   ) => Promise<any>,
 ) {
   return async (
     req: express.Request,
     res: express.Response,
-    next: express.NextFunction
+    next: express.NextFunction,
   ) => {
     try {
       await handler(req, res, next)
@@ -30,12 +33,10 @@ function wrap(
       console.error('Internal Server Error', {
         method: req.method,
         url: req.originalUrl,
-        error: err
+        error: err,
       })
       if (!res.headersSent) {
-        res
-          .status(500)
-          .json({ message: 'Internal Server Error' })
+        res.status(500).json({ message: 'Internal Server Error' })
       }
     }
   }
@@ -50,7 +51,7 @@ app.use(
     .Router()
     .get('/', wrap(users.list))
     .get('/:id', wrap(users.show))
-    .post('/', wrap(users.create))
+    .post('/', wrap(users.create)),
 )
 
 const server = app.listen(port, async () => {
@@ -64,28 +65,29 @@ const server = app.listen(port, async () => {
     new ExpressAdapter(app),
     { abortOnError: false },
   )
+
+  const shutdown = (signal: NodeJS.Signals) => {
+    console.log(`Received ${signal}, stopping server...`)
+    server.close(async (err) => {
+      if (err) {
+        console.error('Failed to close server', err)
+        process.exit(1)
+      }
+      try {
+        await nestApp.close()
+        await mongoose.disconnect()
+        console.log('Server stopped')
+        process.exit(0)
+      } catch (err) {
+        console.error('Failed to disconnect from MongoDB', err)
+        process.exit(1)
+      }
+    })
+  }
+
+  // graceful shutdown
+  process.on('SIGINT', shutdown)
+  process.on('SIGTERM', shutdown)
 })
-
-const shutdown = (signal: NodeJS.Signals) => {
-  console.log(`Received ${signal}, stopping server...`)
-  server.close(async err => {
-    if (err) {
-      console.error('Failed to close server', err)
-      process.exit(1)
-    }
-    try {
-      await mongoose.disconnect()
-      console.log('Server stopped')
-      process.exit(0)
-    } catch (err) {
-      console.error('Failed to disconnect from MongoDB', err)
-      process.exit(1)
-    }
-  })
-}
-
-// graceful shutdown
-process.on('SIGINT', shutdown)
-process.on('SIGTERM', shutdown)
 
 export default app
