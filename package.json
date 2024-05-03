@@ -1,0 +1,8 @@
+{
+  "name": "nestjs-migration-example",
+  "version": "0.0.1",
+  "description": "Next.js Migration Example",
+  "main": "index.js",
+  "author": "yanaemon <hiroki.shirayanagi@gmail.com>",
+  "license": "MIT"
+}
