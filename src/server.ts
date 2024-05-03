@@ -42,9 +42,16 @@ function wrap(
   }
 }
 
-/**
- * Not migrated to Nest.js yet
- */
+// `categories` is migrated to Nest.js yet
+// app.use('/api/categories',
+//   express
+//     .Router()
+//     .get('/', wrap(categories.list))
+//     .get('/:id', wrap(categories.show))
+//     .post('/', wrap(categories.create))
+// )
+
+// `users` is not migrated to Nest.js yet
 app.use(
   '/api/users',
   express
@@ -65,6 +72,8 @@ const server = app.listen(port, async () => {
     new ExpressAdapter(app),
     { abortOnError: false },
   )
+  nestApp.setGlobalPrefix('api')
+  await nestApp.init()
 
   const shutdown = (signal: NodeJS.Signals) => {
     console.log(`Received ${signal}, stopping server...`)
