@@ -1,4 +1,5 @@
-import express from 'express'
+import * as express from 'express'
+import * as http from 'http'
 import mongoose from 'mongoose'
 import { NestFactory } from '@nestjs/core'
 import {
@@ -9,6 +10,7 @@ import { AppModule } from './app.module'
 import { users } from './routes'
 
 const app: express.Express = express()
+const server = http.createServer(app)
 const port = 3000
 const mongodbUri = 'mongodb://localhost:27017/test?directConnection=true'
 
@@ -61,13 +63,14 @@ app.use(
     .post('/', wrap(users.create)),
 )
 
-const server = app.listen(port, async () => {
-  console.log(`Server is starting on http://localhost:${port}`)
+let nestApp: NestExpressApplication = null
+async function start() {
+  console.log('Server is initializing...')
   await mongoose.connect(mongodbUri).then(() => {
     console.log(`Connected to MongoDB ${mongodbUri}`)
   })
 
-  const nestApp = await NestFactory.create<NestExpressApplication>(
+  nestApp = await NestFactory.create<NestExpressApplication>(
     AppModule,
     new ExpressAdapter(app),
     { abortOnError: false },
@@ -75,28 +78,35 @@ const server = app.listen(port, async () => {
   nestApp.setGlobalPrefix('api')
   await nestApp.init()
 
-  const shutdown = (signal: NodeJS.Signals) => {
-    console.log(`Received ${signal}, stopping server...`)
-    server.close(async (err) => {
-      if (err) {
-        console.error('Failed to close server', err)
-        process.exit(1)
-      }
-      try {
-        await nestApp.close()
-        await mongoose.disconnect()
-        console.log('Server stopped')
-        process.exit(0)
-      } catch (err) {
-        console.error('Failed to disconnect from MongoDB', err)
-        process.exit(1)
-      }
-    })
-  }
+  server.listen(port, () => {
+    console.log(`Server is starting on http://localhost:${port}`)
+  })
+}
 
-  // graceful shutdown
-  process.on('SIGINT', shutdown)
-  process.on('SIGTERM', shutdown)
-})
+const shutdown = (signal?: NodeJS.Signals) => {
+  console.log(`Received ${signal}, stopping server...`)
+  server.close(async (err) => {
+    if (err) {
+      console.error('Failed to close server', err)
+      process.exit(1)
+    }
+    try {
+      await nestApp.close()
+      await mongoose.disconnect()
+      console.log('Server stopped')
+      process.exit(0)
+    } catch (err) {
+      console.error('Failed to disconnect from MongoDB', err)
+      process.exit(1)
+    }
+  })
+}
 
+// graceful shutdown
+process.on('SIGINT', shutdown)
+process.on('SIGTERM', shutdown)
+
+start()
+
+export { start, shutdown, app }
 export default app
