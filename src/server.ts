@@ -9,10 +9,9 @@ import {
 import { AppModule } from './app.module'
 import { users } from './routes'
 
-const app: express.Express = express()
-const server = http.createServer(app)
+export const app: express.Express = express()
+export const server = http.createServer(app)
 const port = 3000
-const mongodbUri = 'mongodb://localhost:27017/test?directConnection=true'
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
@@ -64,12 +63,25 @@ app.use(
 )
 
 let nestApp: NestExpressApplication = null
-async function start() {
+let isInitialized = false
+let isReady = false
+export async function start() {
+  if (isInitialized) {
+    return
+  }
+  isInitialized = true
   console.log('Server is initializing...')
-  await mongoose.connect(mongodbUri).then(() => {
-    console.log(`Connected to MongoDB ${mongodbUri}`)
+
+  const mongoDbName = process.env.MONGO_DB_NAME || 'nestjs-migration-example'
+  const mongoDbUri =
+    process.env.MONGO_DB_URI ||
+    `mongodb://localhost:27017?directConnection=true`
+  console.log('MongoDB', `${mongoDbUri}. ${mongoDbName}`)
+  await mongoose.connect(mongoDbUri, { dbName: mongoDbName }).then(() => {
+    console.log(`Connected to MongoDB.`)
   })
 
+  console.log('Nest.js')
   nestApp = await NestFactory.create<NestExpressApplication>(
     AppModule,
     new ExpressAdapter(app),
@@ -80,10 +92,21 @@ async function start() {
 
   server.listen(port, () => {
     console.log(`Server is starting on http://localhost:${port}`)
+    isReady = true
+    app.emit('ready')
   })
+
+  let timeout = 30
+  while (!isReady) {
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+    timeout -= 1
+    if (timeout === 0) {
+      throw new Error('Server is not ready')
+    }
+  }
 }
 
-const shutdown = (signal?: NodeJS.Signals) => {
+export async function shutdown(signal?: NodeJS.Signals) {
   console.log(`Received ${signal}, stopping server...`)
   server.close(async (err) => {
     if (err) {
@@ -101,12 +124,3 @@ const shutdown = (signal?: NodeJS.Signals) => {
     }
   })
 }
-
-// graceful shutdown
-process.on('SIGINT', shutdown)
-process.on('SIGTERM', shutdown)
-
-start()
-
-export { start, shutdown, app }
-export default app

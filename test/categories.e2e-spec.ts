@@ -1,5 +1,5 @@
 import * as request from 'supertest'
-import { start, shutdown, app } from '../src/server'
+import { app, shutdown, start } from '../src/server'
 
 describe('Categories E2E', () => {
   beforeAll(async () => {
@@ -10,6 +10,7 @@ describe('Categories E2E', () => {
   })
 
   it('GET /api/categories', async () => {
+    console.log('test start')
     await request(app).get('/api/categories').expect(200).expect([])
   })
 })
