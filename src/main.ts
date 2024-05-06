@@ -1,4 +1,4 @@
-import { app, shutdown, start } from './server'
+import { app, shutdown, start } from '@/server'
 
 // graceful shutdown
 process.on('SIGINT', shutdown)

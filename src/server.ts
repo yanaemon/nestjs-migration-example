@@ -6,8 +6,8 @@ import {
   ExpressAdapter,
   NestExpressApplication,
 } from '@nestjs/platform-express'
-import { AppModule } from './app.module'
-import { users } from './routes'
+import { AppModule } from '@/app.module'
+import { users } from '@/routes'
 
 export const app: express.Express = express()
 export const server = http.createServer(app)

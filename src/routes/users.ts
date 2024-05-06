@@ -1,5 +1,5 @@
 import * as express from 'express'
-import { User } from '../models'
+import { User } from '@/models'
 import * as validator from 'validator'
 
 export async function list(req: express.Request, res: express.Response) {

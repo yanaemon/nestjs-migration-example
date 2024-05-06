@@ -8,7 +8,7 @@ import {
   Query,
 } from '@nestjs/common'
 import { CategoriesService } from './categories.service'
-import { CategoryType } from '../../models'
+import { CategoryType } from '@/models'
 
 @Controller('categories')
 export class CategoriesController {

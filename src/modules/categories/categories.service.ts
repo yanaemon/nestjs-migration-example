@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { Category, CategoryType } from '../../models'
+import { Category, CategoryType } from '@/models'
 
 @Injectable()
 export class CategoriesService {

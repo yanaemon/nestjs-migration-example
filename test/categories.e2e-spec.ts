@@ -1,5 +1,5 @@
 import * as request from 'supertest'
-import { app, shutdown, start } from '../src/server'
+import { app, shutdown, start } from '@/server'
 import { deleteAll } from './mongoHelper'
 
 describe('Categories E2E', () => {
