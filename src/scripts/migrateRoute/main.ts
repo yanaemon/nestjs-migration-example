@@ -876,6 +876,22 @@ export function replaceReq(params: ModuleConfig) {
     params.controller.filePath,
   )
 
+  const typeChecker = project.getTypeChecker()
+  const predictType = (node: Node) => {
+    try {
+      const typeResult = typeChecker.getTypeAtLocation(node)
+      console.log(
+        'predictType: typeResult',
+        node.getText(),
+        typeResult.getText(),
+      )
+      return typeResult.getText() || 'any'
+    } catch (e) {
+      console.error('predictType: error', { node: node.getText(), error: e })
+      return 'any'
+    }
+  }
+
   const importsToAdd: ImportDeclarationStructure[] = []
   const controllerImportsToAdd: ImportDeclarationStructure[] = []
 
@@ -896,9 +912,9 @@ export function replaceReq(params: ModuleConfig) {
       }
 
       const reqVars = {
-        query: new Set<string | null>(),
-        body: new Set<string | null>(),
-        params: new Set<string | null>(),
+        query: {} as Record<string | null, string | null>,
+        body: {} as Record<string | null, string | null>,
+        params: {} as Record<string | null, string | null>,
       }
 
       method.forEachDescendant((node) => {
@@ -908,10 +924,10 @@ export function replaceReq(params: ModuleConfig) {
           console.log(node.getText(), node.getParent()?.getText(), vars)
 
           if (reqVars[vars[1] as keyof typeof reqVars]) {
-            reqVars[vars[1] as keyof typeof reqVars].add(
+            const key =
               vars[2]?.replace(/[\?\${`]/g, '').replace(/[ }\[\(\n].*/g, '') ||
-                null,
-            )
+              ''
+            reqVars[vars[1] as keyof typeof reqVars][key] = predictType(node)
           } else {
             console.error('unexpected var', vars)
           }
@@ -946,7 +962,7 @@ export function replaceReq(params: ModuleConfig) {
           }
         }
       })
-      console.log(reqVars)
+      console.log('reqVars', reqVars)
 
       const controllerMethod = controllerClass.map((classDeclaration) =>
         classDeclaration
@@ -980,8 +996,8 @@ export function replaceReq(params: ModuleConfig) {
       method.getParameters().forEach((p) => p.remove())
 
       // params
-      if (reqVars.params.size) {
-        Array.from(reqVars.params).forEach((name) => {
+      if (Object.keys(reqVars.params).length) {
+        Object.keys(reqVars.params).forEach((name) => {
           if (name) {
             controllerMethod?.addParameter({
               name,
@@ -1016,15 +1032,17 @@ export function replaceReq(params: ModuleConfig) {
         })
       }
       // body
-      if (reqVars.body.size) {
+      if (Object.keys(reqVars.body).length) {
         const bodyTypes = []
-        for (const key of reqVars.body) {
+        for (const key of Object.keys(reqVars.body)) {
           if (key) {
-            bodyTypes.push(key)
+            bodyTypes.push(`${key}?: ${reqVars.body[key]}`)
+          } else {
+            bodyTypes.push(`[key: string]: any`)
           }
         }
         const bodyType = bodyTypes.length
-          ? `{ ${bodyTypes.map((key) => `${key}?: any`).join('; ')} }`
+          ? `{ ${bodyTypes.join('; ')} }`
           : '{ [key: string]: any }'
         controllerMethod?.addParameter({
           name: 'body',
@@ -1043,11 +1061,13 @@ export function replaceReq(params: ModuleConfig) {
       }
       // query
       const queryOptions = []
-      if (reqVars.query.size) {
+      if (Object.keys(reqVars.query).length) {
         const typeFields = []
-        for (const key of reqVars.query) {
+        for (const key of Object.keys(reqVars.query)) {
           if (key) {
-            typeFields.push(`${key}?: any`)
+            typeFields.push(`${key}?: ${reqVars.query[key]}`)
+          } else {
+            typeFields.push(`[key: string]: any`)
           }
         }
         const queryType = typeFields.length

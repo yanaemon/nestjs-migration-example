@@ -3,9 +3,9 @@ import { User } from '@/models'
 import * as validator from 'validator'
 
 export async function list(req: express.Request, res: express.Response) {
-  const condition: any = {}
+  const condition: { email?: string } = {}
   if (req.query.email) {
-    condition.email = req.query.email
+    condition.email = req.query.email as string
   }
 
   const users = await User.find(condition)
@@ -21,7 +21,7 @@ export async function show(req: express.Request, res: express.Response) {
 }
 
 export async function create(req: express.Request, res: express.Response) {
-  if (!validator.isEmail(req.body.email)) {
+  if (!validator.isEmail(req.body.email as string)) {
     return res.status(400).json({ message: 'invalid email' })
   }
 
