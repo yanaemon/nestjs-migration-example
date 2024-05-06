@@ -15,6 +15,29 @@ import {
 } from 'ts-morph'
 import { httpStatusMap } from './constants'
 
+/**
+ * Generate E2E test code from existing codes
+ *
+ * @example
+ * $ yarn ts-node src/scripts/migrateRoute/main.ts --key users --mode move
+ */
+program
+  .version('1.0.0')
+  .option('--key <key>', 'key of module (ex. exampleResources)')
+  .option('--moduleKey <moduleKey>', 'key of module (ex. exampleResources)')
+  .option(
+    '--routePath <routePath>',
+    'route file path (ex. exampleResources.ts)',
+  )
+  .option('--functions <functions>', 'functions to migrate (ex. func1,func2)')
+  .option('--admin')
+  .option('--debug')
+  .option('--mode <mode>', 'mode to run (ex. move, resJson')
+  .parse(process.argv)
+
+const opts = program.opts()
+const ROUTE_BASE_DIR = 'src/routes'
+
 function toUpperCamelCase(str: string) {
   if (!str) {
     return str
@@ -52,23 +75,6 @@ type ComponentConfig = {
   varName: string
 }
 
-program
-  .version('1.0.0')
-  .option('--key <key>', 'key of module (ex. exampleResources)')
-  .option('--moduleKey <moduleKey>', 'key of module (ex. exampleResources)')
-  .option(
-    '--routePath <routePath>',
-    'route file path (ex. exampleResources.ts)',
-  )
-  .option('--functions <functions>', 'functions to migrate (ex. func1,func2)')
-  .option('--admin')
-  .option('--debug')
-  .option('--mode <mode>', 'mode to run (ex. move, resJson')
-  .parse(process.argv)
-
-const opts = program.opts()
-
-const ROUTE_BASE_DIR = 'src/routes'
 export function getModuleConfig(params: {
   key: string
   moduleKey?: string

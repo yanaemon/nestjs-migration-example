@@ -8,7 +8,6 @@ import OpenAI from 'openai'
  * @example
  * $ yarn ts-node src/scripts/generateE2ETest/main.ts --apiBasePath /api/users --input src/routes/users.ts --output test/users.e2e-spec.ts
  */
-
 program
   .version('1.0.0')
   .option('--apiBasePath <apiBasePath>', 'api base uri (ex. /api/resources)')
