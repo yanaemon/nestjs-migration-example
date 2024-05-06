@@ -8,6 +8,9 @@ export async function list(req: express.Request, res: express.Response) {
 
 export async function show(req: express.Request, res: express.Response) {
   const user = await User.findById(req.params.id)
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' })
+  }
   return res.json(user)
 }
 
