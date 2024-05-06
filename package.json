@@ -6,7 +6,7 @@
   "author": "yanaemon <hiroki.shirayanagi@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "dev": "nodemon ts-node src/main.ts",
+    "dev": "nodemon ts-node -r tsconfig-paths/register src/main.ts",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
