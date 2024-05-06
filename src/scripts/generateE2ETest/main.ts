@@ -37,6 +37,7 @@ function getPrompt(
   const exampleCodes = exampleFilePaths
     .map((filePath: string) => `## ${filePath}\n${getFileContent(filePath)}`)
     .join('\n')
+  const inputCode = getFileContent(inputFilePath)
   const prompt = `Please write a E2E test 
 
 # Requirement
@@ -51,7 +52,7 @@ function getPrompt(
 ${exampleCodes}
 
 # Code
-${getFileContent(inputFilePath)}
+${inputCode}
 
 # Output
 { "code": "<Output Code HERE>" }
