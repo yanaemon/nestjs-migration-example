@@ -19,7 +19,6 @@ export class CategoriesController {
 
   @Get()
   async list(@Query() query: any): Promise<CategoryType[]> {
-    console.log('list', query)
     return this.categoriesService.find(query)
   }
 
