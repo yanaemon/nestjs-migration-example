@@ -10,6 +10,7 @@ import OpenAI from 'openai'
  */
 program
   .version('1.0.0')
+  .description('Generate E2E test code from existing codes')
   .option('--apiBasePath <apiBasePath>', 'api base uri (ex. /api/resources)')
   .option(
     '--input <input>',
@@ -19,7 +20,7 @@ program
     '--output <output>',
     'output file path (ex. path/to/exampleResources.ts)',
   )
-  .option('--debug')
+  .option('--debug', 'debug mode')
   .parse(process.argv)
 
 const exampleFilePaths = ['test/categories.e2e-spec.ts']

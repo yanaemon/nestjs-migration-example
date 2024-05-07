@@ -16,13 +16,23 @@ import {
 import { httpStatusMap } from './constants'
 
 /**
- * Generate E2E test code from existing codes
+ * Migrate express app to Nest.js
  *
  * @example
  * $ yarn ts-node src/scripts/migrateRoute/main.ts --key users --mode move
  */
 program
   .version('1.0.0')
+  .description(
+    `Migrate express app to Nest.js
+
+Steps
+1. move logic to module (mode: move)
+2. add TODO comment to check at refactoring (mode: todo)
+3. migrate Response object (mode: res)
+4. migrate Request object (mode: req)
+`,
+  )
   .option('--key <key>', 'key of module (ex. exampleResources)')
   .option('--moduleKey <moduleKey>', 'key of module (ex. exampleResources)')
   .option(
@@ -30,8 +40,8 @@ program
     'route file path (ex. exampleResources.ts)',
   )
   .option('--functions <functions>', 'functions to migrate (ex. func1,func2)')
-  .option('--admin')
-  .option('--debug')
+  .option('--admin', 'admin route')
+  .option('--debug', 'debug mode')
   .option('--mode <mode>', 'mode to run (ex. move, resJson')
   .parse(process.argv)
 
