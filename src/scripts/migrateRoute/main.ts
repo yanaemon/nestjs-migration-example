@@ -1,4 +1,4 @@
-import { program } from 'commander'
+import { Command, program } from 'commander'
 import { addTodoComment } from './addTodoComment'
 import { moveComponents } from './moveComponents'
 import { parseExpressServer } from './parseExpressServer'
@@ -12,7 +12,7 @@ import { toUpperCamelCase } from './utils'
  * @example
  * $ yarn ts-node src/scripts/migrateRoute/main.ts --key users --mode move
  */
-program
+const main = program
   .version('1.0.0')
   .description(
     `Migrate express app to Nest.js
@@ -33,12 +33,8 @@ Steps
   .option('--functions <functions>', 'functions to migrate (ex. func1,func2)')
   .option('--admin', 'admin route')
   .option('--debug', 'debug mode')
-  .option('--mode <mode>', 'mode to run (ex. move, resJson')
-  .parse(process.argv)
 
-const opts = program.opts()
 const ROUTE_BASE_DIR = 'src/routes'
-
 export function getModuleConfig(params: {
   key: string
   moduleKey?: string
@@ -90,71 +86,67 @@ export function getModuleConfig(params: {
   }
 }
 
-global.debug = opts.debug
+const initParams = () => {
+  const opts = main.opts()
+  global.debug = opts.debug
 
-const modes = {
-  MOVE: 'move',
-  TODO: 'todo',
-  REQ: 'req',
-  RES: 'res',
-  PARSE: 'parse-express',
+  const params = getModuleConfig({
+    key: opts.key,
+    moduleKey: opts.moduleKey,
+    routePath: opts.routePath,
+    functions: opts.functions?.split(',') || [],
+    admin: opts.admin,
+  })
+  return params
 }
 
-if (Object.values(modes).includes(opts.mode)) {
-  switch (opts.mode) {
-    case modes.MOVE: {
-      const params = getModuleConfig({
-        key: opts.key,
-        moduleKey: opts.moduleKey,
-        routePath: opts.routePath,
-        functions: opts.functions?.split(',') || [],
-        admin: opts.admin,
-      })
-
+const commands = [
+  {
+    name: 'move',
+    description: 'move components',
+    action: () => {
+      const params = initParams()
       moveComponents(params)
-      break
-    }
-    case modes.TODO: {
-      const params = getModuleConfig({
-        key: opts.key,
-        moduleKey: opts.moduleKey,
-        routePath: opts.routePath,
-        functions: opts.functions?.split(',') || [],
-        admin: opts.admin,
-      })
-
+    },
+  },
+  {
+    name: 'todo',
+    description: 'add TODO comment',
+    action: () => {
+      const params = initParams()
       addTodoComment(params)
-      break
-    }
-    case modes.PARSE: {
+    },
+  },
+  {
+    name: 'parse-express',
+    description: 'parse express server',
+    action: () => {
       parseExpressServer()
-      break
-    }
-    case modes.REQ: {
-      const params = getModuleConfig({
-        key: opts.key,
-        moduleKey: opts.moduleKey,
-        routePath: opts.routePath,
-        functions: opts.functions?.split(',') || [],
-        admin: opts.admin,
-      })
-
+    },
+  },
+  {
+    name: 'req',
+    description: 'replace req',
+    action: () => {
+      const params = initParams()
       replaceReq(params)
-      break
-    }
-    case modes.RES: {
-      const params = getModuleConfig({
-        key: opts.key,
-        moduleKey: opts.moduleKey,
-        routePath: opts.routePath,
-        functions: opts.functions?.split(',') || [],
-        admin: opts.admin,
-      })
-
+    },
+  },
+  {
+    name: 'res',
+    description: 'replace res',
+    action: () => {
+      const params = initParams()
       replaceRes(params)
-      break
-    }
-  }
-} else {
-  console.error('Invalid mode')
-}
+    },
+  },
+]
+
+commands.forEach((cmd) => {
+  const command = new Command(cmd.name)
+    .description(cmd.description)
+    .action(cmd.action)
+  program.addCommand(command)
+})
+
+main.parse(process.argv)

@@ -40,26 +40,66 @@ $ yarn ts-node src/scripts/generateE2ETest/main.ts --apiBasePath /api/users --in
 create `Controller` and `Service` with current logic
 
 ```sh
-yarn ts-node src/scripts/migrateRoute/main.ts --key users --mode move
+yarn ts-node src/scripts/migrateRoute/main.ts move --key users
+```
+
+Example of Migration
+
+From
+
+```ts
+// routes/users.ts
+async create(req: Request, res: Response) {
+  const email = req.body.email
+  const user = await User.create({ email })
+  return res.json(user)
+}
+```
+
+To
+
+```ts
+/// modules/users/users.controller.ts
+@Controller('users')
+export class UsersController {
+  constructor(
+    @Inject(UsersService) private readonly usersService: UsersService,
+  ) {}
+
+  @Post()
+  async create(req: Request, res: Response) {
+    return this.usersService.create(req, res)
+  }
+}
+
+/// modules/users/users.service.ts
+@Injectable()
+export class UsersService {
+  async create(req: Request, res: Response) {
+    const email = req.body.email
+    const user = await User.create({ email })
+    return res.json(user)
+  }
+}
 ```
 
 #### 2. add TODO comment to check at refactoring
 
 ```sh
-yarn ts-node src/scripts/migrateRoute/main.ts --key users --mode todo
+yarn ts-node src/scripts/migrateRoute/main.ts todo --key users
 ```
 
 Example of Migration
 
-```ts
-// TODO(NestJS Migration): Check req/res
-const email = req.body.email
+```diff
++ // TODO(NestJS Migration): Check req/res
+  const email = req.body.email
 ```
 
 #### 3. migrate Response object
 
 ```sh
-yarn ts-node src/scripts/migrateRoute/main.ts --key users --mode res
+yarn ts-node src/scripts/migrateRoute/main.ts res --key users
 ```
 
 Example of Migration
@@ -75,7 +115,7 @@ Example of Migration
 #### 4. migrate Request object
 
 ```sh
-yarn ts-node src/scripts/migrateRoute/main.ts --key users --mode req
+yarn ts-node src/scripts/migrateRoute/main.ts req --key users
 ```
 
 Example of Migration
