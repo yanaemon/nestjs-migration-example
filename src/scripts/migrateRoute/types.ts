@@ -1,3 +1,5 @@
+export type HttpMethod = 'Get' | 'Post' | 'Put' | 'Delete'
+
 type ComponentConfig = {
   /** @example resources.controller.ts */
   fileName: string

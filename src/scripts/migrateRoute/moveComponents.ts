@@ -7,7 +7,7 @@ import {
   Scope,
   SyntaxKind,
 } from 'ts-morph'
-import { ModuleConfig } from './types'
+import { HttpMethod, ModuleConfig } from './types'
 import {
   debugLog,
   toUpperCamelCase,
@@ -15,8 +15,7 @@ import {
   updateImportDeclarations,
 } from './utils'
 import { parseExpressServer } from './parseExpressServer'
-
-type HttpMethod = 'Get' | 'Post' | 'Put' | 'Delete'
+import { functionHttpConfigMap } from './constants'
 
 /**
  * Helper function to infer HTTP method based on function name or custom logic
@@ -28,18 +27,10 @@ function getFunctionConfig(functionName: string): {
   path: 'id' | null
 } {
   // Example simplistic inference logic; adjust according to your conventions
-  if (functionName.startsWith('get')) {
-    return { method: 'Get', path: 'id' }
-  } else if (functionName.startsWith('index')) {
-    return { method: 'Get', path: null }
-  } else if (functionName.startsWith('create')) {
-    return { method: 'Post', path: null }
-  } else if (functionName.startsWith('update')) {
-    return { method: 'Put', path: 'id' }
-  } else if (functionName.startsWith('delete')) {
-    return { method: 'Delete', path: 'id' }
-  } else if (functionName.startsWith('remove')) {
-    return { method: 'Delete', path: 'id' }
+  for (const key in functionHttpConfigMap) {
+    if (functionName.startsWith(key)) {
+      return functionHttpConfigMap[key]
+    }
   }
   return { method: 'Get', path: null } // Default fallback
 }

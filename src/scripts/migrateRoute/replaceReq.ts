@@ -174,6 +174,7 @@ export function replaceReq(params: ModuleConfig) {
           }
         })
       }
+
       // body
       if (Object.keys(reqVars.body).length) {
         const bodyTypes = []
@@ -202,61 +203,34 @@ export function replaceReq(params: ModuleConfig) {
           namedImports: ['Body'],
         } as ImportDeclarationStructure)
       }
+
       // query
-      const queryOptions = []
       if (Object.keys(reqVars.query).length) {
-        const typeFields = []
+        const queryTypes = []
         for (const key of Object.keys(reqVars.query)) {
           if (key) {
-            typeFields.push(`${key}?: ${reqVars.query[key]}`)
+            queryTypes.push(`${key}?: ${reqVars.query[key]}`)
           } else {
-            typeFields.push(`[key: string]: any`)
+            queryTypes.push(`[key: string]: any`)
           }
         }
-        const queryType = typeFields.length
-          ? `${typeFields.join('; ')}`
-          : '[key: string]: any'
-        const queryOption = {
+        const queryType = queryTypes.length
+          ? `{ ${queryTypes.join('; ')} }`
+          : '{ [key: string]: any }'
+        controllerMethod?.addParameter({
           name: 'query',
           type: queryType,
-          varName: 'query',
-          isSpread: true,
-        }
-        queryOptions.push(queryOption)
-        if (queryOptions.length) {
-          controllerMethod?.addParameter({
-            name: 'query',
-            type: `{ ${queryType} }`,
-            decorators: [{ name: 'Query', arguments: [] }],
-          })
-          controllerImportsToAdd.push({
-            moduleSpecifier: '@nestjs/common',
-            namedImports: ['Query'],
-          } as ImportDeclarationStructure)
-        }
-      }
-      const options = queryOptions.sort((a, b) =>
-        b.isSpread ? -1 : a.isSpread ? 1 : 0,
-      )
-      console.log(options)
-      const makeArg = (v: string[], delim = ', ') => `{ ${v.join(delim)} }`
-      if (options.length) {
-        methodCallExpression?.addArgument(
-          makeArg(
-            options.map((o) =>
-              o.isSpread ? `...${o.varName}` : `${o.name}: ${o.varName}`,
-            ),
-          ),
-        )
-        method.addParameter({
-          name: makeArg(
-            options.map((o) => (o.isSpread ? `...${o.name}` : o.name)),
-          ),
-          type: makeArg(
-            options.map((o) => (o.isSpread ? o.type : `${o.name}?: ${o.type}`)),
-            '; ',
-          ),
+          decorators: [{ name: 'Query', arguments: [] }],
         })
+        method.addParameter({
+          name: 'query',
+          type: queryType,
+        })
+        methodCallExpression?.addArgument('query')
+        controllerImportsToAdd.push({
+          moduleSpecifier: '@nestjs/common',
+          namedImports: ['Query'],
+        } as ImportDeclarationStructure)
       }
     })
   })
