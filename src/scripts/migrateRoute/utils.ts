@@ -22,6 +22,21 @@ export function todo(msg: string) {
   return `TODO(NestJS Migration): ${msg}`
 }
 
+/**
+ * Unique imports
+ * @param arr import declarations
+ * @returns unique import declarations
+ * @example
+ *   WHEN:
+ *     [
+ *       { moduleSpecifier: '@/lib', namedImports: ['Category','User'] },
+ *       { moduleSpecifier: '@/lib', namedImports: ['User'] },
+ *     ]
+ *   THEN:
+ *     [
+ *       { moduleSpecifier: '@/lib', namedImports: ['Category','User'] },
+ *     ]
+ */
 const uniqImports = (arr: ImportDeclarationStructure[]) => {
   return arr.reduce((acc, cur) => {
     const found = acc.find((a) => a.moduleSpecifier === cur.moduleSpecifier)
@@ -48,6 +63,11 @@ const uniqImports = (arr: ImportDeclarationStructure[]) => {
   }, [] as ImportDeclarationStructure[])
 }
 
+/**
+ * Update import declarations
+ * @param outputFile output file
+ * @param importToAdds import declarations to add
+ */
 export function updateImportDeclarations(
   outputFile: SourceFile,
   importToAdds: ImportDeclarationStructure[],

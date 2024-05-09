@@ -35,6 +35,17 @@ function getFunctionConfig(functionName: string): {
   return { method: 'Get', path: null } // Default fallback
 }
 
+/**
+ * copy and paste to service
+ * Don't change the params and logics in function
+ * @param params module config
+ * @example
+ *   WHEN： async function create(req, res) { ... }
+ *   THEN：
+ *     class XxxService {
+ *       async create(req, res) { ... }
+ *     }
+ */
 function copyAndPasteToService(params: ModuleConfig) {
   // Initialize a project object
   const project = new Project()
@@ -315,6 +326,10 @@ function generateController(params: ModuleConfig) {
   console.log('Controller generated successfully.')
 }
 
+/**
+ * move components to service and controller
+ * @param params module config
+ */
 export function moveComponents(params: ModuleConfig) {
   copyAndPasteToService(params)
   generateController(params)

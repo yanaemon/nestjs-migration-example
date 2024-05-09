@@ -63,6 +63,13 @@ function parseAppUse(node: Node) {
   }
 }
 
+/**
+ * parse express server
+ * @returns routes
+ * @example
+ *   WHEN app.get('/', (req, res) => {})
+ *   THEN { method: 'get', path: '/', func: 'list' }
+ */
 export function parseExpressServer() {
   const project = new Project()
   const sourceFile = project.addSourceFileAtPath('src/server.ts')

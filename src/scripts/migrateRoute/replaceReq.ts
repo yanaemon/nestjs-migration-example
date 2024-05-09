@@ -8,6 +8,29 @@ import {
 import { updateImportDeclarations } from './utils'
 import { ModuleConfig } from './types'
 
+/**
+ * replace req.query, req.body, req.params to controller
+ * @param params module config
+ * @example Controller
+ *   WHEN：
+ *     async create(res, req) {
+ *       return this.service.create(req, res)
+ *     }
+ *   THEN：
+ *     async create(@Body() body: { email: string }) {
+ *       return this.service.create(body)
+ *     }
+ *
+ *  @example Service
+ *   WHEN：
+ *     async create(req, res) {
+ *       return Model.create(req.body)
+ *     }
+ *   THEN：
+ *     async create(body: { email: string }) {
+ *       return Model.create(body)
+ *     }
+ */
 export function replaceReq(params: ModuleConfig) {
   // Initialize a new ts-morph Project
   const project = new Project()

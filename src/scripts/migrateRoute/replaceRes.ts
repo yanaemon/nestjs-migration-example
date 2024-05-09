@@ -28,6 +28,13 @@ function getResStructure(callExpression: any) {
   return res
 }
 
+/**
+ * replace res.status(4xx | 5xx) to throw new HttpException
+ * @param params module config
+ * @example
+ *   WHEN: res.status(404).json({ message: 'Not Found' })
+ *   THEN： throw new NotFoundException({ message: 'Not Found' })
+ */
 function replaceResError(params: ModuleConfig) {
   // Setup a new project
   const project = new Project()
@@ -49,9 +56,6 @@ function replaceResError(params: ModuleConfig) {
       console.log('### resError', resError)
       if (resError.status && resError.status !== '200' && resError.json) {
         // Replace with `throw new BadRequestException(...)`
-        // const targetNode = node.getParent().getText().startsWith('return')
-        //   ? node.getParent()
-        //   : node
         node
           ?.getParent()
           ?.replaceWithText(
@@ -76,9 +80,14 @@ function replaceResError(params: ModuleConfig) {
   sourceFile.saveSync()
 }
 
-export function replaceRes(params: ModuleConfig) {
-  replaceResError(params)
-
+/**
+ * replace res.status(200).json to return
+ * @param params module config
+ * @example
+ *   WHEN: res.status(200).json({ message: 'OK' })
+ *   THEN: return { message: 'OK' }
+ */
+function replaceResSuccess(params: ModuleConfig) {
   // Setup a new project
   const project = new Project()
 
@@ -106,4 +115,9 @@ export function replaceRes(params: ModuleConfig) {
 
   // Save the transformed file
   sourceFile.saveSync()
+}
+
+export function replaceRes(params: ModuleConfig) {
+  replaceResError(params)
+  replaceResSuccess(params)
 }

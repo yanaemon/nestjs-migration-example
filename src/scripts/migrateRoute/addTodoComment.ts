@@ -2,6 +2,15 @@ import { Project, SyntaxKind } from 'ts-morph'
 import { ModuleConfig } from './types'
 import { todo } from './utils'
 
+/**
+ * Add todo comment to the req/res which need to check in migration
+ * @param params module config
+ * @example
+ *   WHEN： req.body
+ *   THEN：
+ *     // TODO: Check req/res
+ *     req.body
+ */
 export function addTodoComment(params: ModuleConfig) {
   // Initialize a new ts-morph Project
   const project = new Project()
