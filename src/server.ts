@@ -2,6 +2,7 @@ import * as express from 'express'
 import * as http from 'http'
 import mongoose from 'mongoose'
 import { NestFactory } from '@nestjs/core'
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 import {
   ExpressAdapter,
   NestExpressApplication,
@@ -88,6 +89,16 @@ export async function start() {
     { abortOnError: false },
   )
   nestApp.setGlobalPrefix('api')
+
+  // swagger
+  const config = new DocumentBuilder()
+    .setTitle('Swagger')
+    .setDescription('Swagger')
+    .setVersion('0.1')
+    .build()
+  const document = SwaggerModule.createDocument(nestApp, config)
+  SwaggerModule.setup('api/swagger', nestApp, document)
+
   await nestApp.init()
 
   server.listen(port, () => {
