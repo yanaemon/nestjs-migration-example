@@ -17,6 +17,8 @@ import {
 import { parseExpressServer } from './parseExpressServer'
 import { functionHttpConfigMap } from './constants'
 
+type ExpressServerResult = ReturnType<typeof parseExpressServer>
+
 /**
  * Helper function to infer HTTP method based on function name or custom logic
  * @param functionName - The name of the function
@@ -173,7 +175,10 @@ function copyAndPasteToService(params: ModuleConfig) {
   console.log('Transformation completed.')
 }
 
-function generateController(params: ModuleConfig) {
+function generateController(
+  params: ModuleConfig,
+  entryPoints: ExpressServerResult,
+) {
   // Setup a new project
   const project = new Project()
 
@@ -191,7 +196,6 @@ function generateController(params: ModuleConfig) {
         overwrite: true,
       })
 
-  const entryPoints = parseExpressServer()
   const getEntryPoint = (func: string) => {
     return entryPoints.find((ep) => ep.func === `${params.key}.${func}`)
   }
@@ -332,5 +336,7 @@ function generateController(params: ModuleConfig) {
  */
 export function moveComponents(params: ModuleConfig) {
   copyAndPasteToService(params)
-  generateController(params)
+
+  const entryPoints = parseExpressServer()
+  generateController(params, entryPoints)
 }
