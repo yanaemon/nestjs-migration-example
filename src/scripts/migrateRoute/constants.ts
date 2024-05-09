@@ -1,14 +1,26 @@
 export const httpStatusMap = {
-  400: 'BadRequestException',
-  401: 'UnauthorizedException',
-  403: 'ForbiddenException',
-  404: 'NotFoundException',
-  409: 'ConflictException',
-  410: 'GoneException',
-  422: 'UnprocessableEntityException',
-  500: 'InternalServerErrorException',
-  502: 'BadGatewayException',
-  503: 'ServiceUnavailableException',
+  400: { exception: 'BadRequestException', decorator: 'ApiBadRequestResponse' },
+  401: {
+    exception: 'UnauthorizedException',
+    decorator: 'ApiUnauthorizedResponse',
+  },
+  403: { exception: 'ForbiddenException', decorator: 'ApiForbiddenResponse' },
+  404: { exception: 'NotFoundException', decorator: 'ApiNotFoundResponse' },
+  409: { exception: 'ConflictException', decorator: 'ApiConflictResponse' },
+  410: { exception: 'GoneException', decorator: 'ApiGoneResponse' },
+  422: {
+    exception: 'UnprocessableEntityException',
+    decorator: 'ApiUnprocessableEntityResponse',
+  },
+  500: {
+    exception: 'InternalServerErrorException',
+    decorator: 'ApiInternalServerErrorResponse',
+  },
+  502: { exception: 'BadGatewayException', decorator: 'ApiBadGatewayResponse' },
+  503: {
+    exception: 'ServiceUnavailableException',
+    decorator: 'ApiServiceUnavailableResponse',
+  },
 }
 
 export const functionHttpConfigMap = {

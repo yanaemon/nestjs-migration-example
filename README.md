@@ -105,11 +105,19 @@ yarn ts-node src/scripts/migrateRoute/main.ts res --key users
 Example of Migration
 
 ```diff
-- res.json({ data })
-+ return { data }
+  // users.service.ts
+-     res.json({ data })
++     return { data }
 
-- res.status(400).json({ message: 'invalid data' })
-+ throw new NotFoundException({ message: 'invalid data' })
+-     res.status(400).json({ message: 'invalid data' })
++     throw new BadRequestException({ message: 'invalid data' })
+
+  // users.controller.ts
+  @Get(':id')
++ @ApiBadRequestResponse()
+  async create(@Req() req: Request, @Res() res: Response) {
+    return await this.usersService.create(req, res)
+  }
 ```
 
 #### 4. migrate Request object
@@ -121,8 +129,17 @@ yarn ts-node src/scripts/migrateRoute/main.ts req --key users
 Example of Migration
 
 ```diff
-- async create(req: Request, res: Response) {
--   const email = req.body.email
-+ async create(body: { email?: string }) {
-+   const email = body.email
+  // users.service.ts
+-   async create(req: Request, res: Response) {
+-     const email = req.body.email
++   async create(body: { email?: string }) {
++     const email = body.email
+
+  // users.controller.ts
+    @Post()
+-   async create(@Req() req: Request, @Res() res: Response) {
+-     return await this.usersService.create(req, res)
++   async create(@Body() body: { email?: string }) {
++     return await this.usersService.create(body)
+    }
 ```

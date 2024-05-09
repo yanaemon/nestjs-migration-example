@@ -31,9 +31,12 @@ function getResStructure(callExpression: any) {
 /**
  * replace res.status(4xx | 5xx) to throw new HttpException
  * @param params module config
- * @example
+ * @example Service
  *   WHEN: res.status(404).json({ message: 'Not Found' })
  *   THEN： throw new NotFoundException({ message: 'Not Found' })
+ * @example Controller
+ *   WHEN: http error status (ex. 404) in Service
+ *   THEN: add @ApiNotFoundResponse() decorator to the method
  */
 function replaceResError(params: ModuleConfig) {
   // Setup a new project
@@ -41,35 +44,70 @@ function replaceResError(params: ModuleConfig) {
 
   // Load the source file
   project.addSourceFilesFromTsConfig(params.tsConfigPath)
-  const sourceFile = project.addSourceFileAtPath(params.service.filePath)
+  const serviceFile = project.addSourceFileAtPath(params.service.filePath)
+  const controllerFile = project.addSourceFileAtPath(params.controller.filePath)
 
   const namedImports = new Set<string>()
   // Find all call expressions in the file
-  sourceFile.forEachDescendant((node) => {
-    if (node.getKind() === SyntaxKind.CallExpression) {
-      console.log(node.getText())
-      const callExpression = (node as any).getExpression()
-      if (!Node.isPropertyAccessExpression(callExpression)) {
-        return
+  serviceFile.getClasses().forEach((classDeclaration) => {
+    classDeclaration.getMethods().forEach((method) => {
+      const httpDecorators = new Set<string>()
+      method.forEachDescendant((node) => {
+        if (node.getKind() === SyntaxKind.CallExpression) {
+          console.log(node.getText())
+          const callExpression = (node as any).getExpression()
+          if (!Node.isPropertyAccessExpression(callExpression)) {
+            return
+          }
+          const resError = getResStructure(node)
+          console.log('### resError', resError)
+          if (
+            resError.status &&
+            !resError.status.startsWith('2') &&
+            resError.json
+          ) {
+            // Replace with `throw new BadRequestException(...)`
+            const httpStatus = httpStatusMap[resError.status]
+            const httpStatusException = httpStatus.exception
+            if (httpStatus) {
+              httpDecorators.add(httpStatus.decorator)
+            }
+            node
+              ?.getParent()
+              ?.replaceWithText(
+                httpStatusException
+                  ? `throw new ${httpStatusException}(${resError.json})`
+                  : `throw new HttpException(${resError.json}, ${resError.status})`,
+              )
+            namedImports.add(httpStatusException || 'HttpException')
+          }
+        }
+      })
+
+      if (httpDecorators.size > 0) {
+        const controllerMethod = controllerFile
+          .getClasses()[0]
+          .getMethod(method.getName())
+        if (controllerMethod) {
+          httpDecorators.forEach((decorator) => {
+            controllerMethod.addDecorator({
+              name: decorator,
+              arguments: [],
+            })
+          })
+          updateImportDeclarations(controllerFile, [
+            {
+              moduleSpecifier: '@nestjs/swagger',
+              namedImports: [...httpDecorators],
+            },
+          ] as ImportDeclarationStructure[])
+        }
       }
-      const resError = getResStructure(node)
-      console.log('### resError', resError)
-      if (resError.status && resError.status !== '200' && resError.json) {
-        // Replace with `throw new BadRequestException(...)`
-        node
-          ?.getParent()
-          ?.replaceWithText(
-            httpStatusMap[resError.status]
-              ? `throw new ${httpStatusMap[resError.status]}(${resError.json})`
-              : `throw new HttpException(${resError.json}, ${resError.status})`,
-          )
-        namedImports.add(httpStatusMap[resError.status] || 'HttpException')
-      }
-    }
+    })
   })
 
   if (namedImports.size > 0) {
-    updateImportDeclarations(sourceFile, [
+    updateImportDeclarations(serviceFile, [
       {
         moduleSpecifier: '@nestjs/common',
         namedImports: [...namedImports],
@@ -77,7 +115,8 @@ function replaceResError(params: ModuleConfig) {
     ] as ImportDeclarationStructure[])
   }
   // Save the transformed file
-  sourceFile.saveSync()
+  serviceFile.saveSync()
+  controllerFile.saveSync()
 }
 
 /**
