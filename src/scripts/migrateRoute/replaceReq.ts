@@ -7,6 +7,7 @@ import {
 } from 'ts-morph'
 import { updateImportDeclarations } from './utils'
 import { ModuleConfig } from './types'
+import { createDto } from './createDto'
 
 /**
  * replace req.query, req.body, req.params to controller
@@ -200,60 +201,88 @@ export function replaceReq(params: ModuleConfig) {
 
       // body
       if (Object.keys(reqVars.body).length) {
-        const bodyTypes = []
-        for (const key of Object.keys(reqVars.body)) {
-          if (key) {
-            bodyTypes.push(`${key}?: ${reqVars.body[key]}`)
-          } else {
-            bodyTypes.push(`[key: string]: any`)
-          }
-        }
-        const bodyType = bodyTypes.length
-          ? `{ ${bodyTypes.join('; ')} }`
-          : '{ [key: string]: any }'
+        const dtoProperties = Object.keys(reqVars.body).map((key) =>
+          key
+            ? {
+                name: key,
+                type: reqVars.body[key],
+              }
+            : {
+                name: '[key: string]',
+                type: 'any',
+              },
+        )
+        const dtoData = createDto({
+          project,
+          filePath: params.dto.filePath,
+          func: method.getName(),
+          type: 'body',
+          properties: dtoProperties,
+        })
+        console.log(dtoData)
         controllerMethod?.addParameter({
           name: 'body',
-          type: bodyType,
+          type: dtoData.className,
           decorators: [{ name: 'Body', arguments: [] }],
         })
         method.addParameter({
           name: 'body',
-          type: bodyType,
+          type: dtoData.className,
         })
         methodCallExpression?.addArgument('body')
-        controllerImportsToAdd.push({
-          moduleSpecifier: '@nestjs/common',
-          namedImports: ['Body'],
-        } as ImportDeclarationStructure)
+        importsToAdd.push(dtoData.importDeclarationStructure)
+        controllerImportsToAdd.push(
+          ...([
+            {
+              moduleSpecifier: '@nestjs/common',
+              namedImports: ['Body'],
+            },
+            dtoData.importDeclarationStructure,
+          ] as ImportDeclarationStructure[]),
+        )
+        method
       }
 
       // query
       if (Object.keys(reqVars.query).length) {
-        const queryTypes = []
-        for (const key of Object.keys(reqVars.query)) {
-          if (key) {
-            queryTypes.push(`${key}?: ${reqVars.query[key]}`)
-          } else {
-            queryTypes.push(`[key: string]: any`)
-          }
-        }
-        const queryType = queryTypes.length
-          ? `{ ${queryTypes.join('; ')} }`
-          : '{ [key: string]: any }'
+        const dtoProperties = Object.keys(reqVars.query).map((key) =>
+          key
+            ? {
+                name: key,
+                type: reqVars.query[key],
+              }
+            : {
+                name: '[key: string]',
+                type: 'any',
+              },
+        )
+        const dtoData = createDto({
+          project,
+          filePath: params.dto.filePath,
+          func: method.getName(),
+          type: 'query',
+          properties: dtoProperties,
+        })
         controllerMethod?.addParameter({
           name: 'query',
-          type: queryType,
+          type: dtoData.className,
           decorators: [{ name: 'Query', arguments: [] }],
         })
         method.addParameter({
           name: 'query',
-          type: queryType,
+          type: dtoData.className,
         })
         methodCallExpression?.addArgument('query')
-        controllerImportsToAdd.push({
-          moduleSpecifier: '@nestjs/common',
-          namedImports: ['Query'],
-        } as ImportDeclarationStructure)
+        importsToAdd.push(dtoData.importDeclarationStructure)
+        controllerImportsToAdd.push(
+          ...([
+            {
+              moduleSpecifier: '@nestjs/common',
+              namedImports: ['Query'],
+            },
+            dtoData.importDeclarationStructure,
+          ] as ImportDeclarationStructure[]),
+        )
       }
     })
   })
