@@ -1,11 +1,14 @@
 import * as express from 'express'
 import { User } from '@/models'
-import * as validator from 'validator'
+import * as validator from '@/lib/validator'
 
 export async function list(req: express.Request, res: express.Response) {
-  const condition: { email?: string } = {}
+  const condition: { email?: string; isAdmin?: boolean } = {}
   if (req.query.email) {
     condition.email = req.query.email as string
+  }
+  if (req.query.isAdmin) {
+    condition.isAdmin = req.query.isAdmin.toString() === 'true'
   }
 
   const users = await User.find(condition)
@@ -23,6 +26,9 @@ export async function show(req: express.Request, res: express.Response) {
 export async function create(req: express.Request, res: express.Response) {
   if (!validator.isEmail(req.body.email as string)) {
     return res.status(400).json({ message: 'invalid email' })
+  }
+  if (!validator.isInt(req.body.age as number)) {
+    return res.status(400).json({ message: 'invalid age' })
   }
 
   const user = await User.create(req.body)
