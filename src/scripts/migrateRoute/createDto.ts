@@ -9,6 +9,7 @@ import { debugLog, toUpperCamelCase, updateImportDeclarations } from './utils'
 type CreateDtoParams = {
   project: Project
   filePath: string
+  fileName: string
   func: string
   type: 'body' | 'query' | 'param' | 'response'
   properties: Omit<PropertyDeclarationStructure, 'kind'>[]
@@ -32,7 +33,7 @@ type CreateDtoParams = {
  * }
  */
 export function createDto(params: CreateDtoParams) {
-  const { func, type, properties, project, filePath } = params
+  const { func, type, properties, project, filePath, fileName } = params
   const className = `${toUpperCamelCase(func)}${toUpperCamelCase(type)}Dto`
   const outputFile = getFile(project, filePath)
 
@@ -80,9 +81,7 @@ export function createDto(params: CreateDtoParams) {
   outputFile.saveSync()
   updateImportDeclarations(outputFile, importsToAdd)
 
-  const moduleSpecifier = filePath
-    .replace(/^.*\/dtos\//g, './dtos/')
-    .replace('.ts', '')
+  const moduleSpecifier = './' + fileName.replace('.ts', '')
   return {
     filePath,
     className,

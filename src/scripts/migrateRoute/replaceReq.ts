@@ -215,6 +215,7 @@ export function replaceReq(params: ModuleConfig) {
         const dtoData = createDto({
           project,
           filePath: params.dto.filePath,
+          fileName: params.dto.fileName,
           func: method.getName(),
           type: 'body',
           properties: dtoProperties,
@@ -259,6 +260,7 @@ export function replaceReq(params: ModuleConfig) {
         const dtoData = createDto({
           project,
           filePath: params.dto.filePath,
+          fileName: params.dto.fileName,
           func: method.getName(),
           type: 'query',
           properties: dtoProperties,

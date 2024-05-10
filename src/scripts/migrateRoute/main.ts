@@ -78,10 +78,10 @@ export function getModuleConfig(params: {
       varName: `${resource}${suffixName}Service`,
     },
     dto: {
-      fileName: `${resource}.dto.ts`,
-      filePath: `${moduleDir}/dtos/${resource}.dto.ts`,
-      className: `${classKey}Dto`,
-      varName: `${resource}Dto`,
+      fileName: `${resource}${suffixFile}.dto.ts`,
+      filePath: `${moduleDir}/${resource}${suffixFile}.dto.ts`,
+      className: `${classKey}${suffixName}Dto`,
+      varName: `${resource}${suffixName}Dto`,
     },
   }
 }

@@ -1,6 +1,8 @@
-# nestjs-migration-example
+# Nest.js Migration Example
 
-Nest.js Migration Example
+TSKaigi 2024 向けの Example Code
+
+[TSKaigi 2024 - Talks yanaemon169](https://tskaigi.org/talks/yanaemon169)
 
 ## Directory Structure
 
@@ -132,14 +134,19 @@ Example of Migration
   // users.service.ts
 -   async create(req: Request, res: Response) {
 -     const email = req.body.email
-+   async create(body: { email?: string }) {
++   async create(body: CreateBodyDto) {
 +     const email = body.email
 
   // users.controller.ts
     @Post()
 -   async create(@Req() req: Request, @Res() res: Response) {
 -     return await this.usersService.create(req, res)
-+   async create(@Body() body: { email?: string }) {
++   async create(@Body() body: CreateBodyDto) {
 +     return await this.usersService.create(body)
     }
+
+  // users.dto.ts
+  export class CreateBodyDto {
+    email?: string
+  }
 ```
