@@ -12,7 +12,7 @@ import { users } from '@/routes'
 
 export const app: express.Express = express()
 export const server = http.createServer(app)
-const port = 3000
+const port = process.env.PORT ? parseInt(process.env.PORT) : 3000
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
@@ -119,19 +119,21 @@ export async function start() {
 
 export async function shutdown(signal?: NodeJS.Signals) {
   console.log(`Received ${signal}, stopping server...`)
-  server.close(async (err) => {
-    if (err) {
-      console.error('Failed to close server', err)
-      process.exit(1)
-    }
-    try {
-      await nestApp.close()
-      await mongoose.disconnect()
-      console.log('Server stopped')
-      process.exit(0)
-    } catch (err) {
-      console.error('Failed to disconnect from MongoDB', err)
-      process.exit(1)
-    }
+  return await new Promise((resolve, reject) => {
+    server.close(async (err) => {
+      if (err) {
+        console.error('Failed to close server', err)
+        reject(err)
+      }
+      try {
+        await nestApp.close()
+        await mongoose.disconnect()
+        console.log('Server stopped')
+        resolve(0)
+      } catch (err) {
+        console.error('Failed to disconnect from MongoDB', err)
+        reject(err)
+      }
+    })
   })
 }

@@ -2,6 +2,7 @@
 
 export default async function setup() {
   console.log('global setup')
+  process.env.PORT = '3001'
   // const mongoDbContainer = await new MongoDBContainer('mongo:6.0.1')
   //   .withExposedPorts({
   //     container: 27017,
