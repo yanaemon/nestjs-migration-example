@@ -4,8 +4,13 @@ TSKaigi 2024 向けの Example Code
 
 [TSKaigi 2024 - Talks yanaemon169](https://tskaigi.org/talks/yanaemon169)
 
-スライドはこちら
+## Presentation
+
 [Speaker Deck](https://speakerdeck.com/yanaemon/typescript-nochou-xiang-gou-wen-mu-woyong-ita-shu-bai-wochao-eru-api-noda-gui-mo-rihuakutaringuzhan-lue)
+
+## Demo
+
+![tskaigi2024-demo](https://github.com/yanaemon/nestjs-migration-example/assets/1505845/697381f0-27b8-4cd9-8419-8ee21649d580)
 
 ## Directory Structure
 
