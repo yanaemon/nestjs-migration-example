@@ -4,6 +4,9 @@ TSKaigi 2024 向けの Example Code
 
 [TSKaigi 2024 - Talks yanaemon169](https://tskaigi.org/talks/yanaemon169)
 
+スライドはこちら
+[Speaker Deck](https://speakerdeck.com/yanaemon/typescript-nochou-xiang-gou-wen-mu-woyong-ita-shu-bai-wochao-eru-api-noda-gui-mo-rihuakutaringuzhan-lue)
+
 ## Directory Structure
 
 ```sh
